@@ -41,7 +41,7 @@
 \begin{document}
 
 % ── Title ───────────────────────────────────────────────────
-\title{Anticipatory Active-Aerodynamic Mode Prediction in Formula~1 Racing:\\
+\title{Anticipatory Forecasting of a Telemetry-Derived Active-Aero Proxy in Formula~1 Racing:\\
        A Cross-Circuit Multi-Model Benchmark with Interpretability Analysis}
 
 % ── Authors ─────────────────────────────────────────────────
@@ -75,15 +75,15 @@
 %  ABSTRACT
 % ============================================================
 \begin{abstract}
-The 2026 Formula~1 Technical Regulations mandated active aerodynamic systems that
-physically switch wing configurations between a high-downforce \emph{Z-Mode} and a
-low-drag \emph{X-Mode}.
-We study a telemetry-derived proxy for the activation condition
-($v \geq 240$\,km/h and gear~$\geq 6$) as a tractable surrogate for the
-circuit-specific activation logic teams use in practice.
+The 2026 Formula~1 Technical Regulations introduce driver-adjustable active aerodynamic
+bodywork governed by circuit-specific activation zones rather than a universal trigger.
+As a tractable surrogate for that proprietary activation logic, we define and study a
+\emph{telemetry-derived binary proxy} for straight-mode eligibility,
+$y = \mathbf{1}[v \geq 240\,\text{km/h} \wedge \text{gear} \geq 6]$, and ask whether it
+can be forecast one second ahead from 10\,Hz race telemetry. All results should be read as
+a benchmark on this proxy task, not as validation against measured actuator states.
 Because the physical transition is not instantaneous, a predictive system that
-anticipates the required mode one second in advance can eliminate the actuation
-latency and improve vehicle performance.
+anticipates the required mode one second in advance could reduce transition mismatch.
 This paper presents a two-phase study.
 \emph{Phase~1} applies unsupervised anomaly detection (Isolation Forest) and
 clustering (K-Means, $k{=}4$) alongside supervised classification (Logistic Regression,
@@ -92,9 +92,10 @@ achieving perfect current-mode detection (RF AUC\,=\,1.000) and identifying
 anomalous maximum-braking events co-located at circuit braking zones.
 Permutation analysis reveals that gear position is the single most informative feature
 ($\Delta$AUC\,=\,0.167), marginally exceeding speed.
-\emph{Phase~2} trains eight models — spanning Logistic Regression, Random Forest
-(with and without lag features), CausalLSTM, CausalGRU, Temporal Convolutional
-Network (TCN), CNN1D, and a CausalTransformer — for one-second-ahead anticipatory
+\emph{Phase~2} benchmarks nine learned models — spanning Logistic Regression, Random
+Forest (with and without lag features), XGBoost, CausalLSTM, CausalGRU, Temporal
+Convolutional Network (TCN), CNN1D, and a CausalTransformer — against trivial persistence
+and physics threshold-crossing baselines, for one-second-ahead anticipatory
 prediction on 159\,712 frames across four architecturally diverse circuits.
 Evaluation follows a strict Leave-One-Circuit-Out (LOCO) protocol to assess
 cross-circuit generalisation.
@@ -114,9 +115,8 @@ sequence-modelling architectures under cross-circuit evaluation.
 
 % ── Keywords ────────────────────────────────────────────────
 \begin{IEEEkeywords}
-active aerodynamics, Formula~1 telemetry, time-series classification,
-anomaly detection, causal transformer, leave-one-circuit-out,
-cross-domain generalisation, integrated gradients
+Formula~1 telemetry, active aerodynamics, time-series forecasting,
+domain generalisation, interpretable machine learning, leave-one-circuit-out evaluation
 \end{IEEEkeywords}
 
 % ============================================================
@@ -127,12 +127,16 @@ cross-domain generalisation, integrated gradients
 Formula~1 (F1) represents the technological frontier of motorsport, producing cars
 capable of exceeding 370\,km/h and generating aerodynamic downforce exceeding the
 vehicle's own weight~\cite{ref_f1tech}.
-The 2026 FIA Technical Regulations (Article~3.10) introduced mandatory active
-aerodynamic systems: wings that physically change their angle of attack during a lap,
-alternating between a maximum-downforce configuration for corners (\emph{Z-Mode}) and
+The 2026 FIA Technical Regulations introduced mandatory active
+aerodynamic systems: driver-adjustable wings that change their angle of attack during a
+lap, alternating between a maximum-downforce configuration for corners (\emph{Z-Mode}) and
 a minimum-drag configuration for straights (\emph{X-Mode})~\cite{ref_fia2026}.
-The switch activates when two simultaneous conditions are satisfied:
-vehicle speed~$\geq 240$\,km/h \textbf{and} gear~$\geq 6$.
+Crucially, the regulations govern this through circuit-specific \emph{activation zones}
+and driver-adjustable Corner/Straight modes (with partial activation permitted in
+low-grip conditions) rather than a single universal trigger.
+In the absence of public per-event activation-zone data, we adopt a simple
+\emph{author-defined heuristic} as a proxy for straight-mode eligibility:
+vehicle speed~$\geq 240$\,km/h \textbf{and} gear~$\geq 6$ (detailed and justified below).
 
 \textbf{Label Construction and Scope.}
 We acknowledge that the actual FIA 2026 regulations describe driver-adjustable
@@ -148,24 +152,25 @@ we do not claim to validate a controller against any specific team's proprietary
 activation logic.
 
 \textbf{The Latency Problem.}
-Because active wing actuation is mechanical/hydraulic, the physical transition
-requires approximately 100--300\,ms~\cite{ref_cfd}.
-At racing speeds ($\sim$370\,km/h $\approx$ 103\,m/s), this delay covers roughly
-10--30\,m of track during which the car operates in a suboptimal aerodynamic
+Active wing actuation is mechanical/hydraulic and therefore not instantaneous; the 2026
+FIA Technical Regulations cap the front- and rear-wing transition time at
+400\,ms~\cite{ref_fia2026}.
+At racing speeds ($\sim$370\,km/h $\approx$ 103\,m/s), a transition of this order covers
+several tens of metres of track during which the car operates in a suboptimal aerodynamic
 configuration.
 A purely reactive controller — trigger on threshold crossing, then actuate — therefore
 lags behind the ideal trajectory.
 A \emph{predictive} system that anticipates the threshold crossing one second in advance
-can begin actuation early, ensuring the wing arrives at the correct angle precisely
-when the threshold is reached.
+could begin actuation early, reducing the transition mismatch.
 At 330\,km/h ($\approx 91.7$\,m/s), a 1-second prediction horizon corresponds to a
-91\,m lead time — more than sufficient for a 150--200\,ms hydraulic actuation cycle~\cite{ref_cfd},
-eliminating the aerodynamic deficit currently incurred during the transition delay.
+91\,m lead time — comfortably exceeding the 400\,ms actuation budget.
+We emphasise that any resulting performance benefit remains to be validated in simulation
+or hardware; this paper establishes only the forecasting feasibility of the proxy task.
 
 \textbf{Research Gap.}
 Prior work on F1 telemetry analysis has focused on lap time prediction~\cite{ref_laptime},
-tyre degradation modelling~\cite{ref_tyre}, and driver classification~\cite{ref_driver},
-but to our knowledge no prior work has addressed the anticipatory prediction of
+tyre degradation modelling~\cite{ref_tyre}, and driver classification~\cite{ref_driver};
+we are not aware of prior work addressing the anticipatory prediction of
 active aerodynamic state transitions under a strict cross-circuit evaluation protocol.
 The failure modes of recurrent deep models under domain shift (circuit mismatch) in
 motorsport contexts remain uncharacterised.
@@ -262,8 +267,8 @@ heterogeneous device domains~\cite{ref_adatime}, fault detection across machine
 types~\cite{ref_fault_da}, and human activity recognition across subjects~\cite{ref_har_da}.
 Leave-One-Subject-Out (LOSO) evaluation is standard in these domains~\cite{ref_har_da}.
 We adopt the analogous Leave-One-Circuit-Out (LOCO) protocol, treating each racing
-circuit as a distinct domain; to our knowledge this is the first application of LOCO
-evaluation to motorsport aerodynamic state prediction.
+circuit as a distinct domain; to our knowledge LOCO-style evaluation has not previously
+been applied to motorsport aerodynamic state prediction.
 
 % ── Literature Comparison Table ─────────────────────────────
 \begin{table}[t]
@@ -326,9 +331,11 @@ which provides access to the official F1 timing and telemetry feed at 10\,Hz.
 \emph{Phase~1} uses a single race (2026 Japanese Grand Prix, Suzuka);
 \emph{Phase~2} uses four races across four circuits (Monaco 2025, Monza 2025,
 Silverstone 2025, Suzuka 2026).
-For each race session, lap-by-lap telemetry was extracted from a leading
-competitor's race laps; driver identity was not included as a predictive feature,
-as the study treats the circuit itself as the domain unit of analysis~\cite{ref_adatime}.
+Telemetry was extracted at the lap level from race laps of the leading car
+(Verstappen) at Monaco (70 laps), Monza (50 laps), and Silverstone (33 laps); the Suzuka
+session pools two drivers (Verstappen and Hadjar, 89 laps combined). Driver identity was
+not used as a predictive feature, as the study treats the circuit as the domain unit of
+analysis~\cite{ref_adatime}; the Suzuka two-driver pooling is noted as a limitation.
 All four sessions were conducted under dry conditions; wet-weather laps were
 excluded to control for tire-compound-induced speed-profile variation.
 \textbf{Season note:} Three circuits (Monaco, Monza, Silverstone) are from the
@@ -375,7 +382,9 @@ distance — yielding $F = 12$ features after appending two physics-derived quan
   \label{eq:force}
 \end{equation}
 where $v$ is speed (m/s), $a$ is signed longitudinal acceleration (m/s$^2$), and
-$m = 798\,\text{kg}$ is the 2026 FIA minimum car mass~\cite{ref_fia2026}.
+$m = 798\,\text{kg}$ is a \emph{nominal constant} used only to scale these two derived
+features (both are standardised before training, so the choice of constant does not
+affect any model output; it is not used as an exact regulatory mass).
 The target label $y \in \{0\!=\!\text{Z-Mode},\;1\!=\!\text{X-Mode}\}$ is defined
 deterministically by the regulatory rule~\cite{ref_fia2026}:
 $y = \mathbf{1}[v \geq 240\,\text{km/h} \;\wedge\; \text{gear} \geq 6]$.
@@ -430,7 +439,7 @@ standard deviation $\sigma$ quantifies cross-circuit stability.
     detection (Isolation Forest), clustering (K-Means $k{=}4$), and supervised
     classification (LR, RF) on Suzuka GP telemetry, establishing gear as the
     primary discriminative feature ($\Delta$AUC\,=\,0.167). Phase~2 (bottom)
-    applies an eight-model causal prediction pipeline evaluated under
+    applies a nine-model causal prediction pipeline (plus trivial baselines) evaluated under
     Leave-One-Circuit-Out (LOCO) across four circuits, with Integrated Gradients
     interpretability to diagnose the GRU's circuit-specific degradation at Monaco (AUC\,=\,0.867).}
   \label{fig:architecture}
@@ -473,10 +482,24 @@ by measuring the drop in AUC-ROC when each feature column is randomly shuffled.
 
 \subsection{Phase 2 — Anticipatory Prediction Models}
 
-\subsubsection{Classical Baselines}
+\subsubsection{Trivial and Physics Baselines}
+\textbf{Persistence}: the parameter-free no-change predictor $\hat{y}_{t+H} = y_t$,
+which applies the proxy rule to the current frame and predicts the future mode as the
+current mode.
+\textbf{Physics-CV / Physics-CA}: parameter-free kinematic threshold-crossing predictors.
+Physics-CV assumes constant velocity ($\hat{v}_{t+H} = v_t$); Physics-CA extrapolates
+speed under constant acceleration ($\hat{v}_{t+H} = v_t + a_t H$); both persist gear and
+then apply $\hat{y} = \mathbf{1}[\hat{v}_{t+H} \geq 240 \wedge \text{gear}_t \geq 6]$.
+These test whether a non-ML kinematic rule already solves the task.
+
+\subsubsection{Classical and Tree Baselines}
 \textbf{LR-instant}: Logistic Regression applied to the single most recent frame
 ($1 \times 12$ input); no temporal context. Serves as the primary baseline.
-\textbf{RF-instant}: Random Forest (200 trees) applied to the same single frame.
+\textbf{RF-instant}: Random Forest (300 trees, max depth 15) applied to the same single frame.
+\textbf{XGBoost-instant}: gradient-boosted trees (XGBClassifier; 500 trees, max depth 6,
+learning rate 0.05, subsample 0.8, column subsample 0.8, \texttt{scale\_pos\_weight} set to
+the train-fold class ratio) on the same single frame — a strong non-linear tabular
+comparator to LR-instant.
 \textbf{RF-lag}: Random Forest applied to the full $50 \times 12$ window, flattened
 to a $1 \times 600$ feature vector; temporal context without sequential inductive bias.
 
@@ -518,9 +541,12 @@ Table~\ref{tab:models} summarises all architectures.
 \textcolor{white}{\textbf{Input}} &
 \textcolor{white}{\textbf{Params}} \\
 \midrule
+Persistence       & $1 \times 12$   & 0          \\
+Physics-CV / -CA  & $1 \times 12$   & 0          \\
 LR-instant       & $1 \times 12$   & 13         \\
-RF-instant        & $1 \times 12$   & —          \\
-RF-lag            & $1 \times 600$  & —          \\
+RF-instant        & $1 \times 12$   & 300 trees  \\
+XGBoost-instant   & $1 \times 12$   & 500 trees  \\
+RF-lag            & $1 \times 600$  & 300 trees  \\
 CNN1D             & $50 \times 12$  & $\sim$136K \\
 CausalLSTM        & $50 \times 12$  & $\sim$213K \\
 CausalGRU         & $50 \times 12$  & $\sim$162K \\
@@ -584,8 +610,8 @@ produce per-timestep importance maps.
   \caption{End-to-end methodology workflow. Raw 10\,Hz telemetry (FastF1) is
     preprocessed and augmented with physics-derived features ($E_k$,
     $F_\text{long}$). Phase~1 applies unsupervised and supervised learning on
-    Suzuka. Phase~2 evaluates eight models under LOCO with Integrated Gradients
-    interpretability to diagnose cross-circuit failure modes.}
+    Suzuka. Phase~2 evaluates nine learned models (plus trivial baselines) under LOCO
+    with Integrated Gradients interpretability to diagnose cross-circuit failure modes.}
   \label{fig:workflow}
 \end{figure}
 
@@ -593,6 +619,19 @@ produce per-timestep importance maps.
 %  V. EXPERIMENTAL SETUP
 % ============================================================
 \section{Experimental Setup}
+
+All experiments follow the LOCO protocol of Section~III-D: in each of four folds, one
+circuit is held out for testing and the remaining three are used for training, with a
+stratified within-training validation split for early stopping. For every fold, a
+\texttt{StandardScaler} is fit on the training windows only and applied to the validation
+and test windows, so no test-circuit statistics leak into preprocessing. Overlapping
+sliding windows are formed at stride 1 within each lap and never cross lap boundaries.
+Probability outputs are converted to class predictions at a fixed 0.5 threshold for all
+F1, MCC, and event-level metrics. Table~\ref{tab:expconfig} lists the full configuration;
+all reported numbers come from a single end-to-end reproducibility run on the
+Kaggle GPU environment shown, regenerated by the released notebook.
+All randomness (NumPy, PyTorch, scikit-learn) is seeded at 42, and the code, data, and
+notebook needed to reproduce every number are released (Code and Data Availability).
 
 \begin{table}[h]
 \caption{Experimental Configuration}
@@ -606,17 +645,18 @@ produce per-timestep importance maps.
 \textcolor{white}{\textbf{Component}} &
 \textcolor{white}{\textbf{Specification}} \\
 \midrule
-\multicolumn{2}{l}{\textit{Hardware}} \\
-CPU         & Intel Core i9-12900K / AMD Ryzen 9 7950X \\
-GPU         & NVIDIA RTX 3090 (24\,GB VRAM) \\
-RAM         & 64\,GB DDR5 \\
+\multicolumn{2}{l}{\textit{Hardware (reproducibility run)}} \\
+Platform    & Kaggle Notebooks (GPU) \\
+GPU         & NVIDIA Tesla T4 (16\,GB VRAM) \\
+CPU / RAM   & 4 vCPU Intel Xeon / 29\,GB \\
 \midrule
 \multicolumn{2}{l}{\textit{Software}} \\
-OS          & Ubuntu 22.04 LTS / Windows 11 Pro \\
-Python      & 3.10.x \\
-PyTorch     & 2.1.0 (CUDA 12.1) \\
+OS          & Ubuntu 22.04 LTS \\
+Python      & 3.10 \\
+PyTorch     & 2.1 (CUDA 12.1) \\
 scikit-learn& 1.3.2 \\
-FastF1      & 3.3.x \\
+XGBoost     & 2.0 \\
+FastF1      & 3.3 \\
 \midrule
 \multicolumn{2}{l}{\textit{Training (Phase~2)}} \\
 Window size $W$    & 50 frames (5\,s) \\
@@ -839,13 +879,17 @@ CausalLSTM        & 0.755$\pm$0.142 & 0.645$\pm$0.262 & 0.878$\pm$0.075 \\
 TCN               & 0.810$\pm$0.107 & 0.737$\pm$0.186 & 0.877$\pm$0.117 \\
 CNN1D             & 0.757$\pm$0.142 & 0.659$\pm$0.267 & 0.797$\pm$0.189 \\
 \midrule
+\multicolumn{4}{l}{\textit{Parameter-free baselines}} \\
+Physics-CA$^\dagger$  & 0.857 & 0.808 & 0.862 \\
+Physics-CV$^\dagger$  & 0.818 & 0.760 & 0.839 \\
 Persistence$^\dagger$ & 0.818$\pm$0.035 & 0.760$\pm$0.106 & 0.814$\pm$0.042 \\
 \bottomrule
 \end{tabular}
 \begin{flushleft}
 \footnotesize
-$^\dagger$~Persistence: $\hat{y}_{t+H} = y_t$ (current-frame mode as prediction).
-Not a trained model — included as trivial lower bound.
+$^\dagger$~Parameter-free (untrained) baselines. Persistence: $\hat{y}_{t+H} = y_t$.
+Physics-CV / Physics-CA: constant-velocity / constant-acceleration kinematic threshold
+crossing. Included as lower bounds; means across the four circuits.
 \end{flushleft}
 \end{table}
 
@@ -857,17 +901,25 @@ Not a trained model — included as trivial lower bound.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{figures/plot_model_comparison_H10.png}
-  \caption{Mean AUC-ROC at $H{=}10$ for all eight models with $\pm 1\sigma$ error bars
+  \caption{Mean AUC-ROC at $H{=}10$ for all nine learned models and the persistence
+    baseline with $\pm 1\sigma$ error bars
     across LOCO circuits. LR-instant achieves the highest mean (0.963) and smallest
     standard deviation ($\pm$0.021). Deep learning models show larger variance.}
   \label{fig:modelcomp}
 \end{figure}
 
-\textbf{XGBoost and Persistence Baselines.}
-To close the benchmark gap identified in earlier work, we evaluate two additional
-baselines: XGBoost-instant (XGBClassifier on the last window frame, same features as
-LR-instant) and Persistence ($\hat{y}_{t+H} = y_t$, the naive no-change predictor).
-Results are reported in Table~\ref{tab:p2main}.
+\textbf{Trivial, Physics, and Tree Baselines.}
+Because the proxy label is a deterministic threshold on \emph{future} speed and gear, the
+most informative non-ML comparators are kinematic. We evaluate three parameter-free
+baselines: persistence ($\hat{y}_{t+H} = y_t$); constant-velocity threshold crossing
+(Physics-CV); and constant-acceleration threshold crossing (Physics-CA), which extrapolates
+speed as $v_t + a_t H$ before applying the rule. Persistence and Physics-CV achieve mean
+AUC\,=\,$0.814$ and $0.839$ respectively, while the physics-aware Physics-CA reaches
+$0.862$ (F1-Xmode\,=\,0.808) — better than naive continuity but still
+\textbf{0.10 AUC below LR-instant} (0.963). This directly answers whether ML is needed for
+a deterministic task: a learned soft boundary near the threshold substantially outperforms
+even an acceleration-aware kinematic extrapolation, because it captures sub-threshold
+proximity that a hard kinematic rule cannot.
 
 XGBoost-instant achieves a mean AUC\,=\,$0.958 \pm 0.021$ — essentially identical to
 LR-instant ($0.963 \pm 0.021$; fold-level $\Delta$AUC\,=\,0.005).
@@ -875,20 +927,17 @@ This confirms that LR's advantage over deep models is attributable to the
 \emph{instantaneous-feature inductive bias}, not to LR's specific parametric form:
 any instantaneous-frame classifier — linear or nonlinear — recovers the threshold
 boundary robustly, while models that integrate temporal context do not.
-The persistence baseline achieves mean AUC\,=\,$0.814 \pm 0.042$, establishing a
-clear lower bound that all trained models surpass; the gap ($\Delta$AUC $\approx 0.149$)
-demonstrates that the learned soft boundary near the switching threshold provides
-genuine anticipatory value beyond trivial mode continuity.
 
-\textbf{Feature Ablation: GPS Coordinates.}
-We also evaluated LR-instant and RF-instant with absolute position coordinates
-(X, Y, Z) removed (NO-POS condition, 9 features).
-Mean AUC across LOCO folds was $0.969 \pm 0.011$ for LR (FULL: $0.963$, $\Delta = +0.006$)
-and $0.969 \pm 0.009$ for RF (FULL: $0.959$, $\Delta = +0.010$).
-Removing GPS features \emph{improved} performance marginally, confirming that position
-coordinates contributed noise rather than signal — results are entirely physics-driven
-by speed, gear, and inertial features, with no reliance on circuit-identity leakage
-through absolute coordinates.
+\textbf{Feature Ablation: Track-Geometry Features.}
+We evaluated LR-instant and RF-instant with all absolute track-geometry features removed
+(NO-TRACK condition: X, Y, Z GPS coordinates \emph{and} elevation delta dropped, leaving
+eight purely kinematic/powertrain features). Mean AUC across LOCO folds \emph{improved} to
+$0.969$ for LR (FULL: $0.963$, $\Delta = +0.007$) and $0.971$ for RF
+(FULL: $0.959$, $\Delta = +0.012$).
+Removing every channel that could encode circuit geometry thus increases performance,
+confirming that the results are driven entirely by physics-based kinematics
+(speed, gear, throttle, brake, acceleration, and their derived quantities) with no reliance
+on circuit-identity leakage through position or elevation.
 
 \subsection{Phase 2 — Circuit-by-Circuit Analysis}
 
@@ -1033,9 +1082,12 @@ nGear               & 0.164          & 0.045 \\
   \label{fig:ig_monaco}
 \end{figure}
 
-\subsection{Prediction Horizon Sweep}
+\subsection{Prediction Horizon Sweep (Exploratory)}
 
-Table~\ref{tab:horizon} shows mean AUC-ROC at five horizons.
+Table~\ref{tab:horizon} shows mean AUC-ROC at five horizons. We label this analysis
+\emph{exploratory} because the deep-model entries at $H \neq 10$ derive from a preliminary
+sweep rather than the final reproducibility run (see table footnote); the classical-model
+rows are from the final run.
 At $H{=}1$ (0.1\,s), all models score $\approx 0.999$ — trivially easy, as the
 car barely changes.
 At $H{=}10$ (1\,s), meaningful divergence appears.
@@ -1188,7 +1240,11 @@ across folds is as informative as the interval (see Limitations).
   \includegraphics[width=\columnwidth]{figures/stat_08_permutation_importance.png}
   \caption{Permutation importance ($\Delta$AUC, 50 bootstraps) for Phase~1 classification.
     \texttt{nGear} (0.167) and \texttt{Elevation\_Delta} (0.162) dominate, with Speed (0.0004)
-    ranking only 4th despite being a direct component of the switching rule.}
+    ranking only 4th despite being a direct component of the switching rule.
+    Because Speed, Kinetic\_Energy, and Longitudinal\_Force are strongly collinear,
+    single-feature permutation importance under-credits Speed (its information is shared
+    across correlated channels); these rankings should be read as indicative rather than
+    as independent feature contributions.}
   \label{fig:permimp}
 \end{figure}
 
@@ -1240,6 +1296,8 @@ LR-instant      & \textbf{0.76} & $+$1.1 & 0.92 & \textbf{0.82} & \textbf{0.064}
 XGBoost-instant & 0.68 & $+$1.5 & \textbf{0.82} & 0.79 & 0.069 \\
 RF-instant      & 0.69 & $+$1.3 & 1.42 & 0.73 & 0.073 \\
 RF-lag          & 0.58 & $+$1.1 & 1.27 & 0.62 & 0.097 \\
+CausalTrans.    & 0.68 & $+$1.1 & 1.33 & 0.70 & 0.102 \\
+CausalGRU       & 0.61 & $+$0.4 & 1.47 & 0.65 & 0.105 \\
 \midrule
 Persistence     & 0.08 & $-$0.4 & 0.91 & 0.64 & 0.144 \\
 \bottomrule
@@ -1261,9 +1319,12 @@ This is precisely the failure a controller cannot tolerate, and it demonstrates 
 frame-level AUC is an insufficient figure of merit for this task.
 The instantaneous models, by contrast, anticipate the majority of switches: LR-instant
 detects 76\% with the best calibration (Brier\,=\,0.064) and highest MCC (0.82), and
-XGBoost-instant attains the lowest false-toggle rate (0.82). These results confirm that
-the instantaneous-model advantage is not a framewise-averaging artefact but holds on the
-metrics most relevant to actuation.
+XGBoost-instant attains the lowest false-toggle rate (0.82).
+The two strongest deep models are also included for completeness: CausalTransformer detects
+68\% and CausalGRU 61\%, both with poorer calibration (Brier\,$\approx$\,0.10) and higher
+false-toggle rates than LR-instant. These results confirm that the instantaneous-model
+advantage is not a framewise-averaging artefact but holds on the metrics most relevant to
+actuation, against the deep models as well as the trivial baselines.
 All trained models exhibit a small positive mean timing error ($+1.1$ to $+1.5$ frames,
 i.e.\ $\approx$0.1\,s late), indicating that a deployed controller would need a modest
 fixed lead-offset or hysteresis margin to fully absorb actuation latency.
@@ -1380,13 +1441,13 @@ conclusions.
         This is expected: because $y$ is a deterministic function of the current frame,
         any lap-disjoint split exposes the same threshold boundary.
 
-  \item \textbf{Position-feature circuit identity leakage.} Features derived from
-        absolute track position (X, Y, Z GPS coordinates) could in principle encode
-        circuit identity.
-        A feature ablation (§\ref{sec:results}, NO-POS condition) showed that
-        removing X, Y, Z \emph{improved} LR AUC by $+0.006$ and RF AUC by $+0.010$,
-        confirming that GPS coordinates contribute noise rather than signal and that
-        results are fully attributable to physics-based kinematics features.
+  \item \textbf{Track-geometry circuit identity leakage.} Features derived from
+        absolute track position and elevation could in principle encode circuit identity.
+        A full no-track ablation (§\ref{sec:results}, NO-TRACK condition) removing
+        X, Y, Z \emph{and} elevation delta \emph{improved} LR AUC by $+0.007$ and RF AUC
+        by $+0.012$, confirming that these channels contribute noise rather than signal and
+        that results are attributable to physics-based kinematics features. Cumulative lap
+        distance is not among the 12 model features, so it cannot contribute leakage.
 
   \item \textbf{IG zero baseline.} Integrated Gradients attributions use a zero-vector
         baseline, which has no direct physical interpretation for racing telemetry
@@ -1408,8 +1469,8 @@ conclusions.
         permutation tests (e.g.\ DeLong's or McNemar's) on matched predictions would
         provide stronger statistical guarantees.
 
-  \item \textbf{LightGBM baseline.} XGBoost was evaluated and reported (AUC\,=\,0.961,
-        matching LR within confidence intervals). LightGBM was not evaluated;
+  \item \textbf{LightGBM baseline.} XGBoost was evaluated and reported (AUC\,=\,0.958,
+        fold-level $\Delta$AUC\,=\,0.005 vs.\ LR). LightGBM was not evaluated;
         given XGBoost's near-identical performance to LR, its addition is unlikely
         to change the principal conclusion~\cite{ref_grinsztajn}.
 
@@ -1469,9 +1530,10 @@ Phase~1 demonstrated that the current aerodynamic mode is detectable with perfec
 accuracy from instantaneous telemetry (RF AUC\,=\,1.000), identified anomalous
 maximum-braking events concentrated at circuit braking zones, and established gear
 position as the single most discriminative feature for mode detection.
-Phase~2 conducted, to our knowledge, the first LOCO evaluation of anticipatory aerodynamic
-proxy-state prediction across four architecturally diverse circuits, comparing eight models
-ranging from Logistic Regression to CausalTransformer.
+Phase~2 conducted, to our knowledge, among the first LOCO-style evaluations of anticipatory
+aerodynamic proxy-state prediction across four architecturally diverse circuits, comparing
+nine learned models — from Logistic Regression to CausalTransformer — against trivial
+persistence and physics threshold-crossing baselines.
 
 The principal finding is that \textbf{Logistic Regression achieves the highest
 mean AUC-ROC of 0.963\,$\pm$\,0.021} and is statistically superior to all deep
@@ -1502,6 +1564,12 @@ applying adversarial or recurrent domain adaptation to features that inadvertent
 encode circuit-specific dynamics.
 This principle may apply broadly to predictive control problems in motorsport, automotive,
 and industrial domains where the control target is defined by a known physical rule.
+
+We close by re-emphasising scope: this paper validates cross-circuit robustness on a
+\emph{dry-condition, telemetry-derived binary proxy}, not on the actual FIA driver-adjustable
+bodywork decision process. Establishing whether the same conclusion holds for true
+active-aero control will require measured actuator-state labels, same-season multi-circuit
+data, and simulator or hardware-in-the-loop evaluation.
 
 % ============================================================
 %  CODE AND DATA AVAILABILITY

@@ -1,0 +1,5 @@
+model,condition,mean_auc
+LR-instant,FULL,0.9626
+LR-instant,NO-TRACK,0.9692
+RF-instant,FULL,0.9594
+RF-instant,NO-TRACK,0.9714
