@@ -1,0 +1,56 @@
+========================================================================
+ANTICIPATORY AERO DATASET STATISTICS
+Window W=50 samples (~5.0 s at 10 Hz)
+Horizons H=[1, 5, 10, 25, 50] samples (~[0.1, 0.5, 1.0, 2.5, 5.0] s)
+Features (12): Speed, RPM, nGear, Throttle, Brake, X, Y, Z, Acceleration, Elevation_Delta, Kinetic_Energy_MJ, Longitudinal_Force_N
+Label: y=1 iff Speed[t+H] >= 240.0 AND nGear[t+H] >= 6
+Circuits (4): ['Monza', 'Monaco', 'Silverstone', 'Suzuka']
+========================================================================
+
+── Per-circuit telemetry ──────────────────────────────────────────────
+  Monza         rows= 31,098  laps= 50  drivers=1  inst_X-mode=0.603
+  Monaco        rows= 39,881  laps= 70  drivers=1  inst_X-mode=0.142
+  Silverstone   rows= 25,060  laps= 33  drivers=1  inst_X-mode=0.423
+  Suzuka        rows= 63,673  laps= 89  drivers=2  inst_X-mode=0.390
+
+── Per-horizon windowed dataset ───────────────────────────────────────
+
+  H=  1 (~0.1s ahead)  total_windows= 147,612  overall_X-mode=0.344
+    fold hold-out=Monza         train=119,014 (X-mode=0.290)  test= 28,598 (X-mode=0.569)
+    fold hold-out=Monaco        train=111,231 (X-mode=0.413)  test= 36,381 (X-mode=0.133)
+    fold hold-out=Silverstone   train=124,202 (X-mode=0.335)  test= 23,410 (X-mode=0.389)
+    fold hold-out=Suzuka        train= 88,389 (X-mode=0.342)  test= 59,223 (X-mode=0.347)
+
+  H=  5 (~0.5s ahead)  total_windows= 146,644  overall_X-mode=0.342
+    fold hold-out=Monza         train=118,246 (X-mode=0.288)  test= 28,398 (X-mode=0.565)
+    fold hold-out=Monaco        train=110,543 (X-mode=0.409)  test= 36,101 (X-mode=0.134)
+    fold hold-out=Silverstone   train=123,366 (X-mode=0.333)  test= 23,278 (X-mode=0.387)
+    fold hold-out=Suzuka        train= 87,777 (X-mode=0.341)  test= 58,867 (X-mode=0.343)
+
+  H= 10 (~1.0s ahead)  total_windows= 145,434  overall_X-mode=0.339
+    fold hold-out=Monza         train=117,286 (X-mode=0.285)  test= 28,148 (X-mode=0.562)
+    fold hold-out=Monaco        train=109,683 (X-mode=0.405)  test= 35,751 (X-mode=0.135)
+    fold hold-out=Silverstone   train=122,321 (X-mode=0.330)  test= 23,113 (X-mode=0.384)
+    fold hold-out=Suzuka        train= 87,012 (X-mode=0.339)  test= 58,422 (X-mode=0.338)
+
+  H= 25 (~2.5s ahead)  total_windows= 141,804  overall_X-mode=0.332
+    fold hold-out=Monza         train=114,406 (X-mode=0.278)  test= 27,398 (X-mode=0.557)
+    fold hold-out=Monaco        train=107,103 (X-mode=0.401)  test= 34,701 (X-mode=0.119)
+    fold hold-out=Silverstone   train=119,186 (X-mode=0.324)  test= 22,618 (X-mode=0.373)
+    fold hold-out=Suzuka        train= 84,717 (X-mode=0.329)  test= 57,087 (X-mode=0.337)
+
+  H= 50 (~5.0s ahead)  total_windows= 135,754  overall_X-mode=0.339
+    fold hold-out=Monza         train=109,606 (X-mode=0.281)  test= 26,148 (X-mode=0.583)
+    fold hold-out=Monaco        train=102,803 (X-mode=0.416)  test= 32,951 (X-mode=0.100)
+    fold hold-out=Silverstone   train=113,961 (X-mode=0.331)  test= 21,793 (X-mode=0.380)
+    fold hold-out=Suzuka        train= 80,892 (X-mode=0.332)  test= 54,862 (X-mode=0.350)
+
+── Class-imbalance note ───────────────────────────────────────────────
+  Focal loss (gamma=2, alpha=0.25) is used during training to address imbalance.
+  Report both F1-macro and AUC-PR alongside AUC-ROC.
+
+── Leakage check ──────────────────────────────────────────────────────
+  Input window indices:  [i, i+1, ..., i+W-1]
+  Label index:           i + W + H - 1   (H=1..50 steps ahead)
+  Label index > last input index: ALWAYS TRUE by construction.
+  No future state leaks into the input window.

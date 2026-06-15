@@ -1,0 +1,7 @@
+Feature,Anomaly_mean,Normal_mean,Delta,MW_U,MW_p,Significant,Cohens_d,Effect_Size
+Engine_Load,2492.1729,7066.6513,-4574.4784,41845636.0,0.0,YES,-0.9883,Large
+Throttle,22.7113,64.6172,-41.906,42109024.0,0.0,YES,-1.0095,Large
+Acceleration,-6.1954,0.3366,-6.532,53887265.0,0.0,YES,-1.4087,Large
+Gear_Shift_Active,0.7107,0.0215,0.6892,162670600.0,0.0,YES,3.9612,Large
+Brake,0.6862,0.1565,0.5298,147314440.0,0.0,YES,1.4357,Large
+Heavy_Braking,0.2899,0.0,0.2899,124214162.0,0.0,YES,2.8572,Large

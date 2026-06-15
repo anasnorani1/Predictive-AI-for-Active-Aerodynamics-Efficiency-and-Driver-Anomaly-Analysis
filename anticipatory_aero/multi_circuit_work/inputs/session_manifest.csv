@@ -1,0 +1,5 @@
+circuit,event,season,session,source_file,drivers
+Monza,Italian Grand Prix,2025,R,monza_red_bull.csv,VER;PER
+Monaco,Monaco Grand Prix,2025,R,monaco_red_bull.csv,VER;PER
+Silverstone,British Grand Prix,2025,R,silverstone_red_bull.csv,VER;PER
+Suzuka,Japanese Grand Prix,2026,R,suzuka_red_bull.csv,VER;HAD

@@ -1,5 +1,0 @@
-Model,Type,Primary Metric,Accuracy,Precision,Recall,F1-Score,AUC-ROC,Target Met
-K-Means (k=4),Unsupervised (Clustering),Silhouette Score: 0.3754,-,-,-,-,-,
-Isolation Forest,Unsupervised (Anomaly),Anomaly Rate: 5.00%,-,-,-,-,-, (5% rate expected)
-Logistic Regression (L2),Supervised (Classification),F1-Score: 0.9366,0.9785,0.8807,1.0000,0.9366,0.9997,
-Random Forest,Supervised (Classification),F1-Score: 1.0000,1.0000,1.0000,1.0000,1.0000,1.0000,

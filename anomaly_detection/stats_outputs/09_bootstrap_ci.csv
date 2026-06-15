@@ -1,0 +1,11 @@
+Model,Metric,Point_Est,CI_lo_95,CI_hi_95,CI_width
+Logistic Regression,Accuracy,0.9785,0.9759,0.981,0.0051
+Logistic Regression,Precision,0.8807,0.868,0.894,0.0261
+Logistic Regression,Recall,1.0,1.0,1.0,0.0
+Logistic Regression,F1-Score,0.9366,0.9294,0.9433,0.014
+Logistic Regression,AUC-ROC,0.9997,0.9993,0.9999,0.0006
+Random Forest,Accuracy,1.0,1.0,1.0,0.0
+Random Forest,Precision,1.0,1.0,1.0,0.0
+Random Forest,Recall,1.0,1.0,1.0,0.0
+Random Forest,F1-Score,1.0,1.0,1.0,0.0
+Random Forest,AUC-ROC,1.0,1.0,1.0,0.0

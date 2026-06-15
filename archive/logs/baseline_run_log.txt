@@ -1,0 +1,142 @@
+Running baselines  horizons=[1, 5, 10, 25, 50]  RF n_estimators=300
+
+============================================================
+H = 1 (~0.1 s ahead)
+============================================================
+
+  Fold hold-out=Monaco  train=111,231  test=36,381
+    Training LR-instant ... F1=0.987  AUC-ROC=1.000  AUC-PR=0.998  F1-trans=0.744
+    Training RF-instant ... F1=0.985  AUC-ROC=1.000  AUC-PR=0.998  F1-trans=0.495
+    Training RF-lag ... F1=0.966  AUC-ROC=1.000  AUC-PR=0.997  F1-trans=0.359
+
+  Fold hold-out=Monza  train=119,014  test=28,598
+    Training LR-instant ... F1=0.982  AUC-ROC=0.999  AUC-PR=0.999  F1-trans=0.592
+    Training RF-instant ... F1=0.991  AUC-ROC=1.000  AUC-PR=1.000  F1-trans=0.693
+    Training RF-lag ... F1=0.985  AUC-ROC=0.999  AUC-PR=0.999  F1-trans=0.459
+
+  Fold hold-out=Silverstone  train=124,202  test=23,410
+    Training LR-instant ... F1=0.990  AUC-ROC=1.000  AUC-PR=0.999  F1-trans=0.739
+    Training RF-instant ... F1=0.990  AUC-ROC=1.000  AUC-PR=1.000  F1-trans=0.740
+    Training RF-lag ... F1=0.968  AUC-ROC=0.999  AUC-PR=0.999  F1-trans=0.667
+
+  Fold hold-out=Suzuka  train=88,389  test=59,223
+    Training LR-instant ... F1=0.986  AUC-ROC=0.999  AUC-PR=0.996  F1-trans=0.644
+    Training RF-instant ... F1=0.988  AUC-ROC=0.999  AUC-PR=0.998  F1-trans=0.623
+    Training RF-lag ... F1=0.980  AUC-ROC=0.998  AUC-PR=0.995  F1-trans=0.529
+
+============================================================
+H = 5 (~0.5 s ahead)
+============================================================
+
+  Fold hold-out=Monaco  train=110,543  test=36,101
+    Training LR-instant ... F1=0.963  AUC-ROC=0.997  AUC-PR=0.968  F1-trans=0.571
+    Training RF-instant ... F1=0.945  AUC-ROC=0.996  AUC-PR=0.969  F1-trans=0.241
+    Training RF-lag ... F1=0.800  AUC-ROC=0.972  AUC-PR=0.845  F1-trans=0.238
+
+  Fold hold-out=Monza  train=118,246  test=28,398
+    Training LR-instant ... F1=0.929  AUC-ROC=0.987  AUC-PR=0.990  F1-trans=0.344
+    Training RF-instant ... F1=0.954  AUC-ROC=0.993  AUC-PR=0.994  F1-trans=0.255
+    Training RF-lag ... F1=0.910  AUC-ROC=0.982  AUC-PR=0.985  F1-trans=0.192
+
+  Fold hold-out=Silverstone  train=123,366  test=23,278
+    Training LR-instant ... F1=0.969  AUC-ROC=0.995  AUC-PR=0.991  F1-trans=0.568
+    Training RF-instant ... F1=0.947  AUC-ROC=0.995  AUC-PR=0.992  F1-trans=0.635
+    Training RF-lag ... F1=0.933  AUC-ROC=0.992  AUC-PR=0.971  F1-trans=0.471
+
+  Fold hold-out=Suzuka  train=87,777  test=58,867
+    Training LR-instant ... F1=0.961  AUC-ROC=0.993  AUC-PR=0.987  F1-trans=0.437
+    Training RF-instant ... F1=0.949  AUC-ROC=0.984  AUC-PR=0.955  F1-trans=0.440
+    Training RF-lag ... F1=0.925  AUC-ROC=0.987  AUC-PR=0.967  F1-trans=0.400
+
+============================================================
+H = 10 (~1.0 s ahead)
+============================================================
+
+  Fold hold-out=Monaco  train=109,683  test=35,751
+    Training LR-instant ... F1=0.911  AUC-ROC=0.980  AUC-PR=0.765  F1-trans=0.217
+    Training RF-instant ... F1=0.804  AUC-ROC=0.949  AUC-PR=0.715  F1-trans=0.132
+    Training RF-lag ... F1=0.472  AUC-ROC=0.900  AUC-PR=0.518  F1-trans=0.284
+
+  Fold hold-out=Monza  train=117,286  test=28,148
+    Training LR-instant ... F1=0.873  AUC-ROC=0.932  AUC-PR=0.923  F1-trans=0.299
+    Training RF-instant ... F1=0.871  AUC-ROC=0.956  AUC-PR=0.960  F1-trans=0.302
+    Training RF-lag ... F1=0.824  AUC-ROC=0.937  AUC-PR=0.953  F1-trans=0.272
+
+  Fold hold-out=Silverstone  train=122,321  test=23,113
+    Training LR-instant ... F1=0.935  AUC-ROC=0.970  AUC-PR=0.914  F1-trans=0.399
+    Training RF-instant ... F1=0.931  AUC-ROC=0.972  AUC-PR=0.942  F1-trans=0.308
+    Training RF-lag ... F1=0.432  AUC-ROC=0.962  AUC-PR=0.875  F1-trans=0.354
+
+  Fold hold-out=Suzuka  train=87,012  test=58,422
+    Training LR-instant ... F1=0.905  AUC-ROC=0.968  AUC-PR=0.922  F1-trans=0.225
+    Training RF-instant ... F1=0.742  AUC-ROC=0.949  AUC-PR=0.857  F1-trans=0.426
+    Training RF-lag ... F1=0.617  AUC-ROC=0.959  AUC-PR=0.872  F1-trans=0.328
+
+============================================================
+H = 25 (~2.5 s ahead)
+============================================================
+
+  Fold hold-out=Monaco  train=107,103  test=34,701
+    Training LR-instant ... F1=0.668  AUC-ROC=0.864  AUC-PR=0.337  F1-trans=0.260
+    Training RF-instant ... F1=0.467  AUC-ROC=0.666  AUC-PR=0.155  F1-trans=0.333
+    Training RF-lag ... F1=0.468  AUC-ROC=0.813  AUC-PR=0.372  F1-trans=0.333
+
+  Fold hold-out=Monza  train=114,406  test=27,398
+    Training LR-instant ... F1=0.677  AUC-ROC=0.656  AUC-PR=0.630  F1-trans=0.140
+    Training RF-instant ... F1=0.715  AUC-ROC=0.820  AUC-PR=0.863  F1-trans=0.203
+    Training RF-lag ... F1=0.597  AUC-ROC=0.654  AUC-PR=0.757  F1-trans=0.231
+
+  Fold hold-out=Silverstone  train=119,186  test=22,618
+    Training LR-instant ... F1=0.769  AUC-ROC=0.856  AUC-PR=0.687  F1-trans=0.235
+    Training RF-instant ... F1=0.819  AUC-ROC=0.888  AUC-PR=0.785  F1-trans=0.254
+    Training RF-lag ... F1=0.388  AUC-ROC=0.714  AUC-PR=0.515  F1-trans=0.338
+
+  Fold hold-out=Suzuka  train=84,717  test=57,087
+    Training LR-instant ... F1=0.623  AUC-ROC=0.768  AUC-PR=0.583  F1-trans=0.274
+    Training RF-instant ... F1=0.456  AUC-ROC=0.650  AUC-PR=0.394  F1-trans=0.427
+    Training RF-lag ... F1=0.435  AUC-ROC=0.525  AUC-PR=0.356  F1-trans=0.378
+
+============================================================
+H = 50 (~5.0 s ahead)
+============================================================
+
+  Fold hold-out=Monaco  train=102,803  test=32,951
+    Training LR-instant ... F1=0.518  AUC-ROC=0.589  AUC-PR=0.119  F1-trans=0.511
+    Training RF-instant ... F1=0.472  AUC-ROC=0.777  AUC-PR=0.195  F1-trans=0.263
+    Training RF-lag ... F1=0.474  AUC-ROC=0.583  AUC-PR=0.117  F1-trans=0.263
+
+  Fold hold-out=Monza  train=109,606  test=26,148
+    Training LR-instant ... F1=0.425  AUC-ROC=0.389  AUC-PR=0.549  F1-trans=0.467
+    Training RF-instant ... F1=0.430  AUC-ROC=0.449  AUC-PR=0.620  F1-trans=0.466
+    Training RF-lag ... F1=0.351  AUC-ROC=0.420  AUC-PR=0.507  F1-trans=0.340
+
+  Fold hold-out=Silverstone  train=113,961  test=21,793
+    Training LR-instant ... F1=0.282  AUC-ROC=0.500  AUC-PR=0.418  F1-trans=0.341
+    Training RF-instant ... F1=0.513  AUC-ROC=0.514  AUC-PR=0.408  F1-trans=0.366
+    Training RF-lag ... F1=0.383  AUC-ROC=0.342  AUC-PR=0.290  F1-trans=0.294
+
+  Fold hold-out=Suzuka  train=80,892  test=54,862
+    Training LR-instant ... F1=0.393  AUC-ROC=0.404  AUC-PR=0.297  F1-trans=0.306
+    Training RF-instant ... F1=0.361  AUC-ROC=0.548  AUC-PR=0.339  F1-trans=0.295
+    Training RF-lag ... F1=0.420  AUC-ROC=0.417  AUC-PR=0.357  F1-trans=0.418
+
+Results saved → D:\Predictive-AI-for-Active-Aerodynamics-Efficiency-and-Driver-Anomaly-Analysis\multi_circuit_work\processed\baseline_results.csv
+
+── Baseline summary (mean ± std across LOCO folds) ─────────────────
+               f1_macro_mean  f1_macro_std  f1_xmode_mean  f1_xmode_std  auc_roc_mean  auc_roc_std  auc_pr_mean  auc_pr_std  f1_transition_mean  f1_transition_std
+model      H                                                                                                                                                      
+LR-instant 1        0.986282      0.003362       0.983017      0.004248      0.999233     0.000478     0.998226    0.001374            0.679720           0.074207
+           5        0.955498      0.017720       0.947432      0.010832      0.992991     0.004001     0.983816    0.010877            0.479988           0.110028
+           10       0.906185      0.025393       0.888177      0.031503      0.962571     0.021225     0.881080    0.077239            0.285009           0.084386
+           25       0.684347      0.061185       0.612091      0.176363      0.785969     0.096987     0.559254    0.154146            0.227183           0.060194
+           50       0.404369      0.097271       0.332020      0.301359      0.470558     0.093261     0.345808    0.182874            0.406106           0.098334
+RF-instant 1        0.988578      0.002662       0.984671      0.007702      0.999459     0.000417     0.998875    0.000857            0.637772           0.106882
+           5        0.948705      0.003815       0.932371      0.023120      0.991892     0.005134     0.977614    0.018761            0.392730           0.184974
+           10       0.837001      0.081765       0.766923      0.152696      0.956543     0.011167     0.868384    0.111955            0.291898           0.120780
+           25       0.614342      0.181807       0.414672      0.387841      0.756331     0.116579     0.549171    0.333300            0.304360           0.097529
+           50       0.444094      0.064629       0.217988      0.206982      0.571888     0.142627     0.390705    0.176621            0.347561           0.090149
+RF-lag     1        0.974712      0.009516       0.965299      0.020205      0.998922     0.000673     0.997557    0.001749            0.503674           0.129633
+           5        0.892044      0.062172       0.843505      0.135829      0.983066     0.008543     0.942154    0.065427            0.325253           0.131974
+           10       0.586295      0.177165       0.337401      0.369006      0.939576     0.028830     0.804596    0.195013            0.309353           0.038509
+           25       0.472275      0.089445       0.177541      0.248181      0.676697     0.120190     0.500228    0.185278            0.320288           0.062730
+           50       0.407021      0.052505       0.106170      0.106116      0.440508     0.101245     0.317365    0.161672            0.328624           0.067293

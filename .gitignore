@@ -1,0 +1,32 @@
+# ── Python ───────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# ── FastF1 / data caches ─────────────────────────────────
+**/fastf1_cache/
+**/*_cache/
+**/cache/
+
+# ── Large regenerable ML artifacts ───────────────────────
+# Model checkpoints, windowed arrays, scalers, and prediction
+# dumps are all regenerable via the Kaggle notebook
+# (F1_Kaggle_Full_Reproducibility.ipynb) from the raw circuit CSVs.
+*.pt
+*.npz
+*.npy
+*.pkl
+
+# ── Result bundle (its contents are tracked individually as CSVs) ──
+f1_results_bundle.zip
+xai_package.zip
+
+# ── OS / editor cruft ────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+pull_err.txt
+pull_log*.txt

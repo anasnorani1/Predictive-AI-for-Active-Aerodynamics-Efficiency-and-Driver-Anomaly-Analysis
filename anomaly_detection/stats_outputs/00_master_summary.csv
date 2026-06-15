@@ -1,0 +1,11 @@
+Section,Test,H0,Statistic,p-value,Decision,Effect/Note
+2 — Normality,D'Agostino-Pearson K²,Feature X is normally distributed,K²,< 0.001 (all features),REJECT — all features non-normal,Use non-parametric tests
+2 — Normality,Shapiro-Wilk (subsample),Feature X is normally distributed,W,< 0.05 (all features),REJECT — non-normal confirmed,"Bimodal Speed, heavy-tailed Braking"
+3 — Driver Comparison,Mann-Whitney U,VER and HAD have same Speed distribution,U,0.0,REJECT,d = 0.0419
+3 — Driver Comparison,Chi-squared,VER and HAD have same aero deviation rate,χ²=73.138,0.0,REJECT,Cramér's V = 0.1133
+5 — Track Zones,Kruskal-Wallis H,Speed is the same across all 4 K-Means clusters,H=34439.1205,0.0,REJECT — zones are statistically distinct,η² = 0.555
+6 — Anomaly,Chi-squared,Anomaly flag is independent of aero deviation,χ²=817.375,9.00e-180,REJECT — strong association,"OR = 0.18 [0.16, 0.20]"
+6 — Anomaly,Fisher's Exact,Anomaly flag is independent of aero deviation,OR=0.179,8.61e-226,REJECT,Exact test confirms χ² result
+7 — Model Comparison,DeLong AUC Test,AUC of LR equals AUC of RF,z=-2.062,3.92e-02,REJECT,ΔAUC = 0.0003
+7 — Model Comparison,McNemar Test,LR and RF have the same error pattern,χ²=272.004,0.00e+00,REJECT,RF wins on 274 instances vs LR 0
+8 — CV Stability,Wilcoxon Signed-Rank,LR and RF have same F1-Score distribution across folds,W,See Section 8 output,See Section 8 output,10-fold stratified CV

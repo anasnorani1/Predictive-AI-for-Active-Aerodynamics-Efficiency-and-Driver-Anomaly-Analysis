@@ -1,0 +1,7 @@
+Feature,Levene_p,F_stat,ANOVA_p,KW_stat,KW_p,KW_sig,Eta_sq
+Speed,0.0,26474.2424,0.0,34439.1205,0.0,YES,0.555
+Throttle,0.0,7321.4905,0.0,17530.8358,0.0,YES,0.2565
+Acceleration,0.0,287.029,0.0,1401.0683,0.0,YES,0.0133
+Optimal_Aero,0.0,3378.8354,0.0,8744.7626,0.0,YES,0.1373
+Kinetic_Energy_MJ,0.0,22494.8523,0.0,34439.1204,0.0,YES,0.5145
+Energy_Efficiency_Ratio,0.0,857.3595,0.0,4075.4266,0.0,YES,0.0388

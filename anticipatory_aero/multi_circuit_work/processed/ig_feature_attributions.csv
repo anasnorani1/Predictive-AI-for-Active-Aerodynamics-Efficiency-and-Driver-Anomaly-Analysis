@@ -1,0 +1,13 @@
+,GRU,Transformer
+Speed,0.4244,0.0551
+RPM,0.3882,0.1105
+nGear,0.1635,0.045
+Throttle,0.495,0.0636
+Brake,0.1523,0.0307
+X,0.1331,0.0224
+Y,0.3476,0.0251
+Z,0.4382,0.0378
+Acceleration,0.4773,0.0131
+Elevation_Delta,0.5939,0.0129
+Kinetic_Energy_MJ,0.2181,0.0482
+Longitudinal_Force_N,0.4841,0.0151

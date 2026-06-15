@@ -1,0 +1,7 @@
+Zone_1,Zone_2,Mean_1,Mean_2,MW_U,p_raw,p_bonf,Sig_bonf
+Braking Zone,Acceleration Zone,204.2,226.3,86183714.0,0.0,0.0,YES
+Braking Zone,High-Speed Straight,204.2,274.0,40528932.0,0.0,0.0,YES
+Braking Zone,Corner,204.2,139.2,190467738.0,0.0,0.0,YES
+Acceleration Zone,High-Speed Straight,226.3,274.0,67850921.0,0.0,0.0,YES
+Acceleration Zone,Corner,226.3,139.2,138519358.0,0.0,0.0,YES
+High-Speed Straight,Corner,274.0,139.2,273246268.0,0.0,0.0,YES
