@@ -606,25 +606,8 @@ physically interpretable counterfactual (see Limitations).
 Causal attention weights were additionally extracted and averaged across heads to
 produce per-timestep importance maps.
 
-% ── Suggested Figure ────────────────────────────────────────
-% INSERT Figure 2 here: Workflow Diagram
-% File: figures/workflow.pdf
-% Caption: End-to-end workflow. Data acquisition (FastF1) →
-%          preprocessing → feature engineering → Phase 1 pipeline
-%          (Isolation Forest / K-Means / LR / RF) → Phase 2 LOCO
-%          pipeline (8 models × 4 circuits) → interpretability.
-%
-% LaTeX code:
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth]{figures/methodology_workflow.png}
-  \caption{End-to-end methodology workflow. Raw 10\,Hz telemetry (FastF1) is
-    preprocessed and augmented with physics-derived features ($E_k$,
-    $F_\text{long}$). Phase~1 applies unsupervised and supervised learning on
-    Suzuka. Phase~2 evaluates nine learned models (plus trivial baselines) under LOCO
-    with Integrated Gradients interpretability to diagnose cross-circuit failure modes.}
-  \label{fig:workflow}
-\end{figure}
+% Note: the end-to-end workflow figure was merged into the system architecture
+% figure (Fig.~\ref{fig:architecture}) to remove redundancy and save space.
 
 % ============================================================
 %  V. EXPERIMENTAL SETUP
