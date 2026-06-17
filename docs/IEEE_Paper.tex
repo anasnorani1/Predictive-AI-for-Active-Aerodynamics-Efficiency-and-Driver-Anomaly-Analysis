@@ -1263,6 +1263,59 @@ across folds is as informative as the interval (see Limitations).
   \label{fig:transition}
 \end{figure}
 
+\subsection{Robustness: Nested-LOCO and Seed Stability}
+
+Two robustness checks confirm that the central ranking is not an artefact of the
+hyperparameter-selection protocol or of training stochasticity (Table~\ref{tab:robust}).
+
+\textbf{Nested LOCO.}
+To remove the partial target-domain exposure from tuning on Monza (a LOCO test fold), we
+re-ran the deep-model benchmark with hyperparameters selected \emph{only} on the held-in
+circuits: for each outer test circuit, one held-in circuit serves as the inner validation
+set, the best of a small grid (hidden\,$\in\{64,128\}$, dropout\,$\in\{0.2,0.3\}$) is chosen,
+and the final model is retrained on the three training circuits and evaluated on the
+untouched test circuit. The deep-model means shift by at most $0.038$ AUC (mean
+$|\Delta|\approx0.016$), and the best deep model (CausalTransformer, $0.928$) remains
+$0.035$ below LR-instant ($0.963$). The Monza-tuning exposure therefore does not materially
+affect the conclusion.
+
+\textbf{Seed stability.}
+Training each deep model at three seeds ($\{42,1,2\}$) yields a standard deviation of at
+most $0.022$ AUC (CausalTransformer $\pm0.002$) — far smaller than the $\geq0.035$ gap to
+LR-instant — and preserves the model ordering. The simplicity advantage is thus stable to
+both tuning protocol and random initialisation.
+
+\begin{table}[h]
+\caption{Robustness of Deep-Model AUC-ROC at $H{=}10$: Main Run vs.\ Nested-LOCO vs.\ 3-Seed}
+\label{tab:robust}
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{lccc}
+\toprule
+\rowcolor{hdrgreen}
+\textcolor{white}{\textbf{Model}} &
+\textcolor{white}{\textbf{Main}} &
+\textcolor{white}{\textbf{Nested-LOCO}} &
+\textcolor{white}{\textbf{3-Seed (mean$\pm$std)}} \\
+\midrule
+CausalTrans.   & 0.927 & 0.928 & 0.926$\pm$0.002 \\
+CausalGRU      & 0.913 & 0.920 & 0.904$\pm$0.019 \\
+CausalLSTM     & 0.878 & 0.894 & 0.878$\pm$0.012 \\
+TCN            & 0.877 & 0.839 & 0.873$\pm$0.014 \\
+CNN1D          & 0.797 & 0.815 & 0.774$\pm$0.022 \\
+\midrule
+LR-instant     & \textbf{0.963} & \multicolumn{2}{c}{\textit{deterministic boundary; not retuned}} \\
+\bottomrule
+\end{tabular}
+\begin{flushleft}
+\footnotesize
+Nested-LOCO selects hyperparameters on held-in circuits only (no test-fold exposure).
+3-Seed reports mean$\pm$std over seeds $\{42,1,2\}$. LR-instant stays well above all deep
+models under both checks.
+\end{flushleft}
+\end{table}
+
 \subsection{Control-Relevant Event Metrics}
 
 Frame-level AUC and F1 reward correct classification of every telemetry frame, but a
@@ -1427,11 +1480,12 @@ conclusions.
         confounded with a car-generation shift for the Suzuka fold.
         Future work should use data from a single season for all circuits.
 
-  \item \textbf{HP tuning on a LOCO test fold.} Deep-model hyperparameters were
-        selected on a Monza validation split. Because Monza is one of the four LOCO
-        test circuits, this constitutes partial target-domain exposure for that fold.
-        A nested LOCO procedure (tuning on the held-in circuits only) would
-        produce unbiased estimates.
+  \item \textbf{HP tuning on a LOCO test fold.} Deep-model hyperparameters in the main run
+        were selected on a Monza validation split, which is one of the four LOCO test
+        circuits. We addressed this with a nested-LOCO re-run that selects hyperparameters
+        on held-in circuits only (Table~\ref{tab:robust}); the deep-model means shift by
+        $\leq0.038$ AUC and the ranking is unchanged, so the exposure does not materially
+        affect the conclusion.
 
   \item \textbf{Frame-level split in Phase~1.} Phase~1 used a random 80/20 frame-level
         split. Although adjacent 10\,Hz frames are highly correlated, a validation run
