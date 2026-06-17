@@ -133,6 +133,22 @@ domain generalisation, interpretable machine learning, leave-one-circuit-out eva
 % ============================================================
 \section{Introduction}
 
+% ── System architecture figure (placed early so the full-page float lands up front) ──
+\begin{figure*}[tp]
+  \centering
+  \includegraphics[width=\textwidth,height=0.92\textheight,keepaspectratio]{figures/architechture.png}
+  \caption{Overall architecture of the proposed telemetry-derived active-aero proxy
+    forecasting framework. Phase~1 (top) acquires and cleans FastF1 telemetry, engineers
+    physics features, constructs the binary straight-mode proxy label, and runs discovery
+    analysis. Phase~2 (bottom) formulates one-second-ahead causal forecasting
+    ($W{=}50,\,H{=}10$) and compares instantaneous baselines, tree models, and deep
+    sequence models under Leave-One-Circuit-Out evaluation, with robustness checks,
+    event-level metrics, and Integrated Gradients. The synthesis shows instantaneous,
+    circuit-invariant features generalise better than accumulated temporal context for
+    this proxy task.}
+  \label{fig:architecture}
+\end{figure*}
+
 Formula~1 (F1) represents the technological frontier of motorsport, producing cars
 capable of exceeding 370\,km/h and generating aerodynamic downforce exceeding the
 vehicle's own weight~\cite{ref_f1tech}.
@@ -433,28 +449,8 @@ where $\mathcal{C}_r \in \{\text{Monaco, Monza, Silverstone, Suzuka}\}$.
 The reported score is the mean across all four rounds;
 standard deviation $\sigma$ quantifies cross-circuit stability.
 
-% ── Suggested Figure ────────────────────────────────────────
-% INSERT Figure 1 here: System Architecture Diagram
-% File: figures/system_architecture.pdf
-% Caption: Proposed two-phase system architecture.
-%          Phase 1 (top): anomaly detection and classification on
-%          single-circuit data. Phase 2 (bottom): multi-circuit
-%          LOCO evaluation pipeline with sliding-window causal
-%          prediction.
-%
-% LaTeX code:
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=\textwidth]{figures/architecture.png}
-  \caption{Proposed two-phase system architecture. Phase~1 (top) performs anomaly
-    detection (Isolation Forest), clustering (K-Means $k{=}4$), and supervised
-    classification (LR, RF) on Suzuka GP telemetry, establishing gear as the
-    primary discriminative feature ($\Delta$AUC\,=\,0.167). Phase~2 (bottom)
-    applies a nine-model causal prediction pipeline (plus trivial baselines) evaluated under
-    Leave-One-Circuit-Out (LOCO) across four circuits, with Integrated Gradients
-    interpretability to diagnose the GRU's circuit-specific degradation at Monaco (AUC\,=\,0.867).}
-  \label{fig:architecture}
-\end{figure*}
+% Note: the system architecture figure (Fig.~\ref{fig:architecture}) is defined near the
+% start of Section~I so that, as a full-page double-column float, it lands on an early page.
 
 % ============================================================
 %  IV. METHODOLOGY
