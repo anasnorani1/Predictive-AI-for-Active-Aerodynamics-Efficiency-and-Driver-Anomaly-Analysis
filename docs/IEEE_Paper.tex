@@ -107,9 +107,10 @@ Evaluation follows a strict Leave-One-Circuit-Out (LOCO) protocol to assess
 cross-circuit generalisation.
 Because the X-Mode label is a deterministic function of instantaneous speed and gear,
 the ML task is essentially forecasting when physical thresholds will be exceeded
-— not discovering hidden patterns. This explains why Logistic Regression, which
-directly approximates the threshold boundary, achieves the highest mean AUC-ROC of
-0.963\,$\pm$\,0.021, outperforming all deep models (bootstrap 95\%\,CIs exclude zero).
+— not discovering hidden patterns. Consistent with this, instantaneous-feature models
+achieve the strongest cross-circuit performance: Logistic Regression attains the highest
+mean AUC-ROC of 0.963\,$\pm$\,0.021, with XGBoost close behind ($0.958\,\pm\,0.021$), while
+all deep sequence models are less stable under domain shift (fold-level CIs exclude zero).
 CausalGRU is weakest at Monaco (AUC\,=\,0.867, F1-Xmode\,=\,0.496 — its worst fold);
 Integrated Gradients are \emph{consistent with} a circuit-specific failure mode —
 \emph{circuit speed memorisation} — in which recurrent models rely on accumulated
@@ -178,8 +179,8 @@ or hardware; this paper establishes only the forecasting feasibility of the prox
 \textbf{Research Gap.}
 Prior work on F1 telemetry analysis has focused on lap time prediction~\cite{ref_laptime},
 tyre degradation modelling~\cite{ref_tyre}, and driver classification~\cite{ref_driver};
-we are not aware of prior work addressing the anticipatory prediction of
-active aerodynamic state transitions under a strict cross-circuit evaluation protocol.
+we are not aware of prior work that benchmarks one-second-ahead cross-circuit forecasting
+of a telemetry-derived straight-mode proxy under a strict Leave-One-Circuit-Out protocol.
 The failure modes of recurrent deep models under domain shift (circuit mismatch) in
 motorsport contexts remain uncharacterised.
 
@@ -187,10 +188,10 @@ motorsport contexts remain uncharacterised.
 This paper makes the following contributions:
 \begin{enumerate}
   \item A two-phase study combining unsupervised anomaly detection and supervised
-        cross-circuit temporal prediction of active aerodynamic state.
+        cross-circuit temporal prediction of a telemetry-derived active-aero proxy state.
   \item A LOCO evaluation protocol on four circuits (Monaco, Monza, Silverstone,
-        Suzuka) that rigorously tests cross-circuit generalisation — the actual
-        deployment condition.
+        Suzuka) that directly tests cross-circuit generalisation for the proxy
+        forecasting task.
   \item Empirical demonstration that Logistic Regression (AUC\,=\,0.963) statistically
         outperforms all deep learning architectures including Transformer-based models.
   \item An Integrated Gradients analysis of the GRU's circuit-specific degradation at
@@ -203,8 +204,9 @@ This paper makes the following contributions:
 
 The remainder of this paper is structured as follows: Section~II reviews related work;
 Section~III describes the dataset and problem formulation; Section~IV details the
-methodology; Section~V presents experimental results; Section~VI discusses findings;
-Section~VII concludes.
+methodology; Section~V specifies the experimental setup; Section~VI presents results;
+Section~VII discusses findings; Section~VIII outlines future work; and Section~IX
+concludes the paper.
 
 % ============================================================
 %  II. RELATED WORK
@@ -320,8 +322,8 @@ The surveyed literature spans anomaly detection~\cite{ref_chandola,ref_ruff}, mo
 telemetry analytics~\cite{ref_drs,ref_f1_anomaly}, time-series classification~\cite{ref_tcn},
 and cross-domain generalisation~\cite{ref_adatime,ref_har_da}.
 However, none addresses the combination of (i)~\emph{anticipatory} (not reactive) prediction
-of an active aerodynamic state, (ii)~strict cross-circuit evaluation (LOCO), and
-(iii)~Integrated Gradients diagnosis of domain-shift failure modes.
+of a telemetry-derived active-aero proxy state, (ii)~strict cross-circuit evaluation (LOCO),
+and (iii)~Integrated Gradients diagnosis of domain-shift failure modes.
 Unlike DRS prediction~\cite{ref_drs} — which is reactive and single-circuit — our
 study requires a model to predict whether the aero mode will \emph{change} one second
 in the future on a circuit it has never seen.
@@ -889,16 +891,17 @@ TCN               & 0.810$\pm$0.107 & 0.737$\pm$0.186 & 0.877$\pm$0.117 \\
 CNN1D             & 0.757$\pm$0.142 & 0.659$\pm$0.267 & 0.797$\pm$0.189 \\
 \midrule
 \multicolumn{4}{l}{\textit{Parameter-free baselines}} \\
-Physics-CA$^\dagger$  & 0.857 & 0.808 & 0.862 \\
-Physics-CV$^\dagger$  & 0.818 & 0.760 & 0.839 \\
+Physics-CA$^\dagger$  & 0.857$\pm$0.033 & 0.808$\pm$0.094 & 0.862$\pm$0.053 \\
+Physics-CV$^\dagger$  & 0.818$\pm$0.035 & 0.760$\pm$0.106 & 0.839$\pm$0.049 \\
 Persistence$^\dagger$ & 0.818$\pm$0.035 & 0.760$\pm$0.106 & 0.814$\pm$0.042 \\
 \bottomrule
 \end{tabular}
 \begin{flushleft}
 \footnotesize
-$^\dagger$~Parameter-free (untrained) baselines. Persistence: $\hat{y}_{t+H} = y_t$.
+$^\dagger$~Parameter-free (untrained) baselines, reported as mean\,$\pm$\,std across the
+four LOCO folds for consistency with the learned models. Persistence: $\hat{y}_{t+H} = y_t$.
 Physics-CV / Physics-CA: constant-velocity / constant-acceleration kinematic threshold
-crossing. Included as lower bounds; means across the four circuits.
+crossing. Included as lower bounds.
 \end{flushleft}
 \end{table}
 
@@ -925,10 +928,10 @@ baselines: persistence ($\hat{y}_{t+H} = y_t$); constant-velocity threshold cros
 speed as $v_t + a_t H$ before applying the rule. Persistence and Physics-CV achieve mean
 AUC\,=\,$0.814$ and $0.839$ respectively, while the physics-aware Physics-CA reaches
 $0.862$ (F1-Xmode\,=\,0.808) — better than naive continuity but still
-\textbf{0.10 AUC below LR-instant} (0.963). This directly answers whether ML is needed for
-a deterministic task: a learned soft boundary near the threshold substantially outperforms
-even an acceleration-aware kinematic extrapolation, because it captures sub-threshold
-proximity that a hard kinematic rule cannot.
+\textbf{0.10 AUC below LR-instant} (0.963). Within this proxy benchmark, these results show
+that a learned soft boundary near the threshold provides value beyond simple kinematic
+threshold extrapolation, because it captures sub-threshold proximity that a hard kinematic
+rule cannot.
 
 XGBoost-instant achieves a mean AUC\,=\,$0.958 \pm 0.021$ — essentially identical to
 LR-instant ($0.963 \pm 0.021$; fold-level $\Delta$AUC\,=\,0.005).
@@ -1093,21 +1096,19 @@ nGear               & 0.164          & 0.045 \\
   \label{fig:ig_monaco}
 \end{figure}
 
-\subsection{Prediction Horizon Sweep (Exploratory)}
+\subsection{Prediction Horizon Sweep}
 
-Table~\ref{tab:horizon} shows mean AUC-ROC at five horizons. We label this analysis
-\emph{exploratory} because the deep-model entries at $H \neq 10$ derive from a preliminary
-sweep rather than the final reproducibility run (see table footnote); the classical-model
-rows are from the final run.
-At $H{=}1$ (0.1\,s), all models score $\approx 0.999$ — trivially easy, as the
-car barely changes.
-At $H{=}10$ (1\,s), meaningful divergence appears.
-At $H{=}50$ (5\,s), all models approach random chance ($\approx 0.50$).
-The Transformer uniquely retains above-chance performance at $H{=}50$ (0.595),
-suggesting partial capture of long-range periodic track structure.
+Table~\ref{tab:horizon} shows mean AUC-ROC at five horizons for the instantaneous and tree
+models, all produced under the single final reproducibility pipeline. At $H{=}1$ (0.1\,s),
+all models score $\approx 0.999$ — trivially easy, as the car barely changes. At
+$H{=}10$ (1\,s), the practical sweet spot, meaningful separation appears. At $H{=}50$
+(5\,s), all models approach random chance ($\approx 0.50$), confirming that the proxy state
+becomes effectively unpredictable beyond a few seconds. The deep models were retrained only
+at the primary horizon $H{=}10$ (their values appear in Table~\ref{tab:p2main}); a uniform
+deep-model horizon sweep is left to future work.
 
 \begin{table}[h]
-\caption{Mean AUC-ROC vs.\ Prediction Horizon (Selected Models)}
+\caption{Mean AUC-ROC vs.\ Prediction Horizon (Instantaneous / Tree Models, Final Run)}
 \label{tab:horizon}
 \centering
 \small
@@ -1122,18 +1123,17 @@ suggesting partial capture of long-range periodic track structure.
 \textcolor{white}{\textbf{H=25}} &
 \textcolor{white}{\textbf{H=50}} \\
 \midrule
-LR-instant   & 0.999 & 0.993 & \textbf{0.963} & 0.786 & 0.471 \\
-RF-instant    & 0.999 & 0.992 & 0.959 & 0.765 & 0.575 \\
-RF-lag        & 0.999 & 0.984 & 0.944 & 0.724 & 0.402 \\
-CausalTrans.  & 0.999 & 0.987 & 0.927 & 0.691 & \textbf{0.595} \\
-CausalGRU     & 0.999 & 0.986 & 0.913 & 0.682 & 0.505 \\
+LR-instant      & 0.999 & 0.993 & \textbf{0.963} & 0.786 & 0.471 \\
+RF-instant      & 0.999 & 0.992 & 0.959 & 0.765 & 0.575 \\
+XGBoost-instant & 1.000 & 0.993 & 0.958 & 0.770 & 0.449 \\
+RF-lag          & 0.999 & 0.984 & 0.944 & 0.724 & 0.402 \\
 \bottomrule
 \end{tabular}
 \begin{flushleft}
 \footnotesize
-Classical-model rows reflect the full-horizon reproducibility run. For the deep models,
-the $H{=}10$ column is from the same run; values at $H \in \{1,5,25,50\}$ are from the
-preliminary full-horizon sweep (deep retraining was repeated only at the primary horizon).
+All rows are from the single final full-horizon reproducibility run. Deep sequence models
+were retrained only at $H{=}10$ (Table~\ref{tab:p2main}); we therefore do not report a deep
+horizon sweep rather than mix protocols within one table.
 \end{flushleft}
 \end{table}
 
@@ -1146,11 +1146,11 @@ preliminary full-horizon sweep (deep retraining was repeated only at the primary
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{figures/plot_horizon_sweep.png}
-  \caption{AUC-ROC vs.\ prediction horizon for all models.
-    All models converge near 1.0 at $H{=}1$ (trivially easy).
-    $H{=}10$ (1\,s) is the practical sweet spot: models diverge and the prediction
-    remains actionable for wing actuation. At $H{=}50$ (5\,s), all models approach
-    random chance.}
+  \caption{AUC-ROC vs.\ prediction horizon for the instantaneous and tree models
+    (final reproducibility run). All converge near 1.0 at $H{=}1$ (trivially easy);
+    $H{=}10$ (1\,s) is the practical sweet spot; by $H{=}50$ (5\,s) all approach
+    random chance, indicating the proxy state is effectively unpredictable beyond a few
+    seconds.}
   \label{fig:horizonsweep}
 \end{figure}
 
@@ -1160,9 +1160,8 @@ Mode-change transition windows ($\pm$5 frames around each Z$\leftrightarrow$X sw
 incur a consistent F1 drop of $\approx$0.26 across all circuits and both deep models
 (Table~\ref{tab:transition}). The consistency across models and circuits is consistent
 with a fundamental information shortfall — the 5-second causal window may not fully
-determine the mode state 1\,s ahead during the transition — though we acknowledge that
-training distribution effects and position-feature leakage (see Limitations)
-cannot be fully excluded as contributing factors without additional ablation.
+determine the mode state 1\,s ahead during the transition — though training-distribution
+effects and the proxy-label formulation cannot be fully excluded as contributing factors.
 
 \begin{table}[h]
 \caption{F1-Macro at Stable vs.\ Transition Windows}
@@ -1273,9 +1272,10 @@ across folds is as informative as the interval (see Limitations).
   \includegraphics[width=\columnwidth]{figures/plot_transition_f1.png}
   \caption{F1-Macro at stable vs.\ transition windows ($\pm$0.5\,s around mode switches)
     for CausalTransformer and CausalGRU across all circuits.
-    The $\approx$0.26 drop is consistent across all conditions, suggesting
-    a systematic information shortfall at mode-switch boundaries
-    (see text for caveats regarding position-feature leakage).}
+    The $\approx$0.26 drop is consistent across all conditions, suggesting that
+    transition-adjacent prediction is systematically harder than stable-state prediction.
+    See text for caveats regarding training-distribution effects and the proxy-label
+    formulation.}
   \label{fig:transition}
 \end{figure}
 
@@ -1596,8 +1596,8 @@ validation.
 % ============================================================
 \section{Conclusion}
 
-This paper has presented a two-phase investigation of predictive AI for Formula~1
-active aerodynamic systems.
+This paper has presented a two-phase investigation of predictive AI for a
+telemetry-derived Formula~1 active-aero proxy.
 Phase~1 demonstrated that the current aerodynamic mode is detectable with perfect
 accuracy from instantaneous telemetry (RF AUC\,=\,1.000), identified anomalous
 maximum-braking events concentrated at circuit braking zones, and established gear
@@ -1618,11 +1618,12 @@ recurrent models encode implicit speed-approach-trajectory priors calibrated to 
 circuits that transfer poorly to circuits where the same threshold is reached
 via a qualitatively different kinematic path.
 
-The central lesson for cross-domain temporal classification is that
-\textbf{instantaneous physics features generalise; accumulated speed history does not}.
-Models that evaluate current state rather than accumulated trajectory inherit the
-circuit-independence of the underlying switching rule, achieving robust performance
-without circuit-specific fine-tuning.
+Within this proxy-task benchmark, \textbf{instantaneous circuit-invariant telemetry
+features generalise more reliably than accumulated speed history}; we present this as a
+benchmark-specific design lesson rather than a general theorem about cross-domain temporal
+classification. Models that evaluate current state rather than accumulated trajectory
+inherit the circuit-independence of the underlying switching rule, achieving robust
+performance without circuit-specific fine-tuning.
 Within this proxy-task benchmark, the strongest evidence favours models driven by
 instantaneous sensor state rather than accumulated temporal context, with
 transition-window hysteresis to manage the consistent $\approx$0.26 F1 drop observed at

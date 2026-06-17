@@ -100,8 +100,8 @@ def fig_heatmap(df):
 # ── 3. Horizon sweep ───────────────────────────────────────────────────────────
 def fig_horizon(df):
     Hs = [1, 5, 10, 25, 50]
-    show = ["LR-instant", "RF-instant", "RF-lag", "CausalTrans.", "CausalGRU"]
-    # deep models only have fresh H=10; use available horizons present in df
+    # only instantaneous/tree models have the full final-run horizon sweep
+    show = ["LR-instant", "RF-instant", "XGBoost-instant", "RF-lag"]
     fig, ax = plt.subplots(figsize=(7.5, 4.5))
     for m in show:
         sub = df[df.model == m]
