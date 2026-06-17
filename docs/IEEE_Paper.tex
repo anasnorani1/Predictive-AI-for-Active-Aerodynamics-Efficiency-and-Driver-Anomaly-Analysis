@@ -1,13 +1,18 @@
 % ============================================================
 %  Predictive AI for Active Aerodynamics Efficiency
 %  and Driver Anomaly Analysis
-%  IEEE Conference Paper — IEEEtran, Two-Column Format
-%  Overleaf-Ready LaTeX
-%  Authors: Anas Norani, Hanan Majeed, Maha Mohsin
-%  SEECS, NUST — June 2026
+%  IEEE Conference Paper — IEEEtran, Two-Column Format (A4)
+%  Overleaf-Ready LaTeX  |  AI2ML 2026 submission
+%  Authors: omitted for blind review (set \blindfalse for camera-ready)
 % ============================================================
 
-\documentclass[conference]{IEEEtran}
+\documentclass[conference,a4paper]{IEEEtran}
+
+% ── Blind-review toggle ─────────────────────────────────────
+% AI2ML 2026 requires a BLIND submission. Keep \blindtrue for the review copy;
+% switch to \blindfalse for the camera-ready (restores authors + repository link).
+\newif\ifblind
+\blindtrue
 
 % ── Packages ────────────────────────────────────────────────
 \usepackage[utf8]{inputenc}
@@ -58,16 +63,17 @@
   \IEEEauthorblockA{
     School of Electrical Engineering \& Computer Science\\
     National University of Sciences \& Technology\\
-    Islamabad, Pakistan
-  }
-  \and
-  \IEEEauthorblockN{Maha Mohsin}
-  \IEEEauthorblockA{
-    School of Electrical Engineering \& Computer Science\\
-    National University of Sciences \& Technology\\
-    Islamabad, Pakistan
+    Islamabad, Pakistan\\
+    \textit{hmajeed.bsds24seecs@seecs.edu.pk}
   }
 }
+
+% Blind-review override: when \blindtrue, this last \author call wins and hides
+% identities; for camera-ready set \blindfalse (preamble) and the real block above is used.
+\ifblind
+  \author{\IEEEauthorblockN{}\IEEEauthorblockA{%
+    \textit{Author names and affiliations omitted for blind review.}}}
+\fi
 
 \maketitle
 
@@ -104,9 +110,11 @@ the ML task is essentially forecasting when physical thresholds will be exceeded
 — not discovering hidden patterns. This explains why Logistic Regression, which
 directly approximates the threshold boundary, achieves the highest mean AUC-ROC of
 0.963\,$\pm$\,0.021, outperforming all deep models (bootstrap 95\%\,CIs exclude zero).
-CausalGRU is weakest at Monaco (AUC\,=\,0.867, F1-Xmode\,=\,0.496 — its worst fold),
-which Integrated Gradients associate with \emph{circuit speed memorisation}: diffuse
-reliance on accumulated speed-trajectory dynamics in the recurrent hidden state.
+CausalGRU is weakest at Monaco (AUC\,=\,0.867, F1-Xmode\,=\,0.496 — its worst fold);
+Integrated Gradients are \emph{consistent with} a circuit-specific failure mode —
+\emph{circuit speed memorisation} — in which recurrent models rely on accumulated
+speed-trajectory cues that transfer poorly across circuits (a hypothesis-level
+interpretation, not causal proof).
 These results suggest that for forecasting tasks governed by a deterministic
 physical threshold, instantaneous circuit-invariant features outperform accumulated
 temporal context: a 13-parameter Logistic Regression robustly dominates all
@@ -370,9 +378,10 @@ Silverstone (2025 GB GP) & 25\,060 & 37.9\% & 2 \\
 
 \subsection{Feature Engineering}
 
-Raw telemetry yields ten direct measurements: speed, RPM, gear (\texttt{nGear}),
-throttle, brake, GPS coordinates $(x, y, z)$, elevation delta, and cumulative lap
-distance — yielding $F = 12$ features after appending two physics-derived quantities:
+The model feature set comprises ten channels derived from the raw telemetry: speed, RPM,
+gear (\texttt{nGear}), throttle, brake, GPS coordinates $(x, y, z)$, elevation delta, and
+longitudinal acceleration (computed as the per-sample first difference of speed within each
+lap) — yielding $F = 12$ features after appending two physics-derived quantities:
 \begin{equation}
   E_k = \tfrac{1}{2} m v^2, \quad m = 798\,\text{kg}
   \label{eq:ke}
@@ -928,16 +937,18 @@ This confirms that LR's advantage over deep models is attributable to the
 any instantaneous-frame classifier — linear or nonlinear — recovers the threshold
 boundary robustly, while models that integrate temporal context do not.
 
-\textbf{Feature Ablation: Track-Geometry Features.}
-We evaluated LR-instant and RF-instant with all absolute track-geometry features removed
-(NO-TRACK condition: X, Y, Z GPS coordinates \emph{and} elevation delta dropped, leaving
-eight purely kinematic/powertrain features). Mean AUC across LOCO folds \emph{improved} to
+\textbf{Feature Ablation: No-Location Condition.}
+We evaluated LR-instant and RF-instant with \emph{every} absolute-position and progress
+channel removed (NO-LOCATION condition). The feature set contains four such channels —
+the GPS coordinates X, Y, Z and elevation delta; cumulative lap distance is \emph{not}
+among the model features, so no progress signal remains once these four are dropped, leaving
+eight purely kinematic/powertrain features (speed, RPM, gear, throttle, brake, acceleration,
+kinetic energy, longitudinal force). Mean AUC across LOCO folds \emph{improved} to
 $0.969$ for LR (FULL: $0.963$, $\Delta = +0.007$) and $0.971$ for RF
 (FULL: $0.959$, $\Delta = +0.012$).
-Removing every channel that could encode circuit geometry thus increases performance,
-confirming that the results are driven entirely by physics-based kinematics
-(speed, gear, throttle, brake, acceleration, and their derived quantities) with no reliance
-on circuit-identity leakage through position or elevation.
+Removing every channel that could encode circuit location or track progress thus increases
+performance, confirming that the results are driven entirely by physics-based kinematics
+with no reliance on circuit-identity leakage through position, elevation, or lap progress.
 
 \subsection{Phase 2 — Circuit-by-Circuit Analysis}
 
@@ -1192,9 +1203,9 @@ For each LR-instant\,$-$\,model comparison we compute the per-fold AUC differenc
 four held-out circuits and form a 95\% confidence interval by bootstrap-resampling the
 four folds with replacement ($B = 5{,}000$); we also report how many of the four folds
 favour LR-instant (Table~\ref{tab:bootstrap}).
-LR-instant is statistically indistinguishable from the other instantaneous/tree models
-(RF-instant, XGBoost-instant, RF-lag: $\Delta$AUC\,$\leq$\,0.019, intervals at or
-spanning zero), but its advantage over every deep sequence model is consistent and its
+LR-instant is practically tied with the other instantaneous/tree models
+(RF-instant, XGBoost-instant, RF-lag: $\Delta$AUC\,$\leq$\,0.019, negligible in magnitude),
+but its advantage over every deep sequence model is consistent and its
 fold-level interval excludes zero in all five cases.
 
 \begin{table}[h]
@@ -1212,19 +1223,24 @@ fold-level interval excludes zero in all five cases.
 \textcolor{white}{\textbf{Sig.?}} &
 \textcolor{white}{\textbf{Folds}} \\
 \midrule
-LR vs RF-instant     & $+$0.003 & [$-$0.017, $+$0.023] & No  & 2/4 \\
-LR vs XGBoost-inst.  & $+$0.005 & [$+$0.001, $+$0.009] & Marg. & 3/4 \\
-LR vs RF-lag         & $+$0.019 & [$-$0.010, $+$0.056] & No  & 3/4 \\
-LR vs CausalTrans.   & $+$0.036 & [$+$0.009, $+$0.063] & \textbf{Yes} & 4/4 \\
-LR vs CausalGRU      & $+$0.050 & [$+$0.004, $+$0.095] & \textbf{Yes} & 3/4 \\
-LR vs CausalLSTM     & $+$0.085 & [$+$0.024, $+$0.151] & \textbf{Yes} & 3/4 \\
-LR vs TCN            & $+$0.086 & [$+$0.014, $+$0.203] & \textbf{Yes} & 4/4 \\
-LR vs CNN1D          & $+$0.166 & [$+$0.032, $+$0.346] & \textbf{Yes} & 4/4 \\
+LR vs RF-instant     & $+$0.003 & [$-$0.017, $+$0.023] & Tie  & 2/4 \\
+LR vs XGBoost-inst.  & $+$0.005 & [$+$0.001, $+$0.009] & Tie$^\ddagger$ & 3/4 \\
+LR vs RF-lag         & $+$0.019 & [$-$0.010, $+$0.056] & Tie  & 3/4 \\
+LR vs CausalTrans.   & $+$0.036 & [$+$0.009, $+$0.063] & \textbf{LR} & 4/4 \\
+LR vs CausalGRU      & $+$0.050 & [$+$0.004, $+$0.095] & \textbf{LR} & 3/4 \\
+LR vs CausalLSTM     & $+$0.085 & [$+$0.024, $+$0.151] & \textbf{LR} & 3/4 \\
+LR vs TCN            & $+$0.086 & [$+$0.014, $+$0.203] & \textbf{LR} & 4/4 \\
+LR vs CNN1D          & $+$0.166 & [$+$0.032, $+$0.346] & \textbf{LR} & 4/4 \\
 \bottomrule
 \end{tabular}
 \begin{flushleft}
 \footnotesize
-``Folds'' = number of the four held-out circuits on which LR-instant outranks the model.
+``Sig.?'' summarises the fold-level evidence: \emph{Tie} = no meaningful difference
+(interval spans zero or $\Delta$AUC negligible); \emph{LR} = LR-instant favoured with the
+interval excluding zero. ``Folds'' = number of the four held-out circuits on which
+LR-instant outranks the model.
+$^\ddagger$~The interval narrowly excludes zero, but the $0.005$ AUC difference is
+negligible in magnitude, so we treat LR and XGBoost as tied.
 With only four domains, fold-level intervals are necessarily wide; the consistent sign
 across folds is as informative as the interval (see Limitations).
 \end{flushleft}
@@ -1334,32 +1350,33 @@ and Brier score for discrimination and calibration under class imbalance
 \centering
 \small
 \renewcommand{\arraystretch}{1.25}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccc}
 \toprule
 \rowcolor{hdrgreen}
 \textcolor{white}{\textbf{Model}} &
 \textcolor{white}{\textbf{Detect}} &
-\textcolor{white}{\textbf{Timing}} &
 \textcolor{white}{\textbf{FalseTog}} &
 \textcolor{white}{\textbf{MCC}} &
 \textcolor{white}{\textbf{Brier}} \\
 \midrule
 \rowcolor{rowhighlight}
-LR-instant      & \textbf{0.76} & $+$1.1 & 0.92 & \textbf{0.82} & \textbf{0.064} \\
-XGBoost-instant & 0.68 & $+$1.5 & \textbf{0.82} & 0.79 & 0.069 \\
-RF-instant      & 0.69 & $+$1.3 & 1.42 & 0.73 & 0.073 \\
-RF-lag          & 0.58 & $+$1.1 & 1.27 & 0.62 & 0.097 \\
-CausalTrans.    & 0.68 & $+$1.1 & 1.33 & 0.70 & 0.102 \\
-CausalGRU       & 0.61 & $+$0.4 & 1.47 & 0.65 & 0.105 \\
+LR-instant      & \textbf{0.76}$\pm$.12 & 0.92$\pm$.38 & \textbf{0.82}$\pm$.04 & \textbf{0.064}$\pm$.02 \\
+XGBoost-instant & 0.68$\pm$.11 & \textbf{0.82}$\pm$.21 & 0.79$\pm$.05 & 0.069$\pm$.02 \\
+RF-instant      & 0.69$\pm$.18 & 1.42$\pm$1.2 & 0.73$\pm$.10 & 0.073$\pm$.02 \\
+RF-lag          & 0.58$\pm$.22 & 1.27$\pm$.50 & 0.62$\pm$.22 & 0.097$\pm$.01 \\
+CausalTrans.    & 0.68$\pm$.11 & 1.33$\pm$.56 & 0.70$\pm$.10 & 0.102$\pm$.05 \\
+CausalGRU       & 0.61$\pm$.13 & 1.47$\pm$.78 & 0.65$\pm$.17 & 0.105$\pm$.03 \\
 \midrule
-Persistence     & 0.08 & $-$0.4 & 0.91 & 0.64 & 0.144 \\
+Persistence     & 0.08$\pm$.03 & 0.91$\pm$.03 & 0.64$\pm$.06 & 0.144$\pm$.03 \\
 \bottomrule
 \end{tabular}
 \begin{flushleft}
 \footnotesize
-Detect = fraction of true switches predicted within $\pm$0.5\,s;
-Timing = mean frames between true and predicted switch ($<0$ = early);
-FalseTog = spurious switches per true switch; MCC, Brier on full test set.
+Mean\,$\pm$\,std across the four LOCO folds. Detect = fraction of true switches predicted
+within $\pm$0.5\,s; FalseTog = spurious switches per true switch; MCC, Brier on full test
+set. Mean switch-timing error is $+1.1$ to $+1.5$ frames ($\approx$0.1\,s late) for all
+trained models. Folds contain 374 (Monaco), 564 (Monza), 372 (Silverstone), and 809
+(Suzuka) true switch events ($2{,}119$ total).
 \end{flushleft}
 \end{table}
 
@@ -1456,14 +1473,14 @@ manifested in the observable sensor window.
 \subsection{Practical Implications}
 
 These results \emph{suggest} — but do not yet prove under real-deployment conditions —
-the following for active-aero control: (1) LR-instant's 13-parameter model
-could be implemented on an embedded microcontroller with microsecond latency,
-potentially within the actuation budget; (2) the 1-second anticipation horizon
-appears sufficient for wing actuation; (3) the consistent transition-window drop
-indicates that a hysteresis rule suppressing predictions near mode-switch boundaries
-may reduce unnecessary actuations.
-Hardware validation and simulator testing are needed before drawing engineering
-conclusions.
+the following for active-aero control: (1) LR-instant's 13-parameter model is small enough
+that embedded inference latency is unlikely to be the binding constraint (though this was
+not profiled); (2) the 1-second anticipation horizon appears sufficient relative to the
+400\,ms actuation budget; (3) the consistent transition-window drop indicates that a
+hysteresis rule suppressing predictions near mode-switch boundaries may reduce unnecessary
+actuations.
+These are engineering intuitions, not demonstrated results: hardware profiling, simulator,
+and closed-loop testing are needed before drawing deployment conclusions.
 
 \subsection{Limitations}
 
@@ -1495,13 +1512,14 @@ conclusions.
         This is expected: because $y$ is a deterministic function of the current frame,
         any lap-disjoint split exposes the same threshold boundary.
 
-  \item \textbf{Track-geometry circuit identity leakage.} Features derived from
+  \item \textbf{Location/progress circuit-identity leakage.} Features derived from
         absolute track position and elevation could in principle encode circuit identity.
-        A full no-track ablation (§\ref{sec:results}, NO-TRACK condition) removing
-        X, Y, Z \emph{and} elevation delta \emph{improved} LR AUC by $+0.007$ and RF AUC
-        by $+0.012$, confirming that these channels contribute noise rather than signal and
-        that results are attributable to physics-based kinematics features. Cumulative lap
-        distance is not among the 12 model features, so it cannot contribute leakage.
+        A full no-location ablation (§\ref{sec:results}, NO-LOCATION condition) removing
+        \emph{all four} such channels (X, Y, Z, and elevation delta) \emph{improved}
+        LR AUC by $+0.007$ and RF AUC by $+0.012$, confirming they contribute noise rather
+        than signal. Cumulative lap distance is \emph{not} among the 12 model features, so no
+        track-progress signal remains; the result is therefore attributable purely to
+        physics-based kinematics.
 
   \item \textbf{IG zero baseline.} Integrated Gradients attributions use a zero-vector
         baseline, which has no direct physical interpretation for racing telemetry
@@ -1605,17 +1623,19 @@ The central lesson for cross-domain temporal classification is that
 Models that evaluate current state rather than accumulated trajectory inherit the
 circuit-independence of the underlying switching rule, achieving robust performance
 without circuit-specific fine-tuning.
-These findings suggest — pending hardware validation and simulator testing — that
-control systems — if a validated active-aero proxy label can be confirmed — should
-rely on instantaneous sensor state and should incorporate transition-window hysteresis
-to manage the consistent $\approx$0.26 F1 drop observed at mode-switch boundaries.
+Within this proxy-task benchmark, the strongest evidence favours models driven by
+instantaneous sensor state rather than accumulated temporal context, with
+transition-window hysteresis to manage the consistent $\approx$0.26 F1 drop observed at
+mode-switch boundaries; whether this design principle transfers to true active-aero
+control remains to be validated with actuator-state labels and closed-loop testing.
 
-More broadly, this study demonstrates that when the prediction target is a
-deterministic function of instantaneous physical quantities, \textbf{domain-invariant
-feature selection is more effective than post-hoc domain adaptation}: choosing features
-whose relationship to the target is circuit-independent (speed and gear) outperforms
-applying adversarial or recurrent domain adaptation to features that inadvertently
-encode circuit-specific dynamics.
+More broadly, this study offers a data point for the hypothesis that, when the prediction
+target is a deterministic function of instantaneous physical quantities,
+\textbf{domain-invariant feature selection can be more effective than added temporal
+modelling}: choosing features whose relationship to the target is circuit-independent
+(speed and gear) outperformed the sequence models here, which inadvertently encode
+circuit-specific dynamics. We present this as a hypothesis supported by one benchmark,
+not a general claim that feature selection dominates domain adaptation across tasks.
 This principle may apply broadly to predictive control problems in motorsport, automotive,
 and industrial domains where the control target is defined by a known physical rule.
 
@@ -1631,8 +1651,13 @@ data, and simulator or hardware-in-the-loop evaluation.
 \section*{Code and Data Availability}
 All source code, the raw per-circuit telemetry CSVs, the end-to-end Kaggle reproducibility
 notebook (\texttt{F1\_Kaggle\_Full\_Reproducibility.ipynb}), and the complete result tables
-reported in this paper are publicly available at:
-\url{https://github.com/anasnorani1/Predictive-AI-for-Active-Aerodynamics-Efficiency-and-Driver-Anomaly-Analysis}.
+reported in this paper are publicly available
+\ifblind
+at a public repository whose URL is withheld for blind review (it will be provided in the
+camera-ready version).
+\else
+at: \url{https://github.com/anasnorani1/Predictive-AI-for-Active-Aerodynamics-Efficiency-and-Driver-Anomaly-Analysis}.
+\fi
 The telemetry was retrieved from the official Formula~1 timing feed via the
 FastF1 library~\cite{ref_fastf1}; the repository includes the exact extracted sessions so
 that every table and figure can be regenerated under the fixed random seed (42).
